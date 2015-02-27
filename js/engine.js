@@ -24,7 +24,7 @@ var Engine = (function(global) {
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
         lastTime;
-
+	
     canvas.width = 505;
     canvas.height = 606;
     doc.body.appendChild(canvas);
@@ -80,7 +80,10 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        if (player.dead) {
+			reset();
+			player.dead = false;
+		}
     }
 
     /* This is called by the update function  and loops through all of the
@@ -160,7 +163,8 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+        player.x = 200;
+		player.y = 400;
     }
 
     /* Go ahead and load all of the images we know we're going to need to
@@ -181,4 +185,6 @@ var Engine = (function(global) {
      * from within their app.js files.
      */
     global.ctx = ctx;
+	global.canvasWidth = canvas.width;
+	global.canvasHeight = canvas.height;
 })(this);
