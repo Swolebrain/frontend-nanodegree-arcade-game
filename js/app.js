@@ -1,22 +1,42 @@
-// Enemies our player must avoid
-var Enemy = function(xc, yc, sp) {
+/*
+	MAIN SUPERCLASS THANG
+*/
+var Thang = function(xc, yc, spd, spr){
+	this.sprite = spr;
+	this.x = xc;
+	this.y = yc;
+	this.speed = spd;
+}
+Thang.prototype.render = function(){
+	ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+}
+Thang.prototype.update = function(dt) {/*empty stub just so all thangs can have update() called on em */}
+
+
+/*
+	ENEMY CLASS SYNONYMOUS WITH BUG. EXTENDS THANG
+	(If I was ever going to add more enemies I
+	would add the sprite as a constructor parameter)
+*/
+var Enemy = function(xc, yc, sp, fl) {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
-    this.sprite = 'images/enemy-bug.png';
-	this.x = xc;
-	this.y = yc;
-	this.speed = sp;
+	Thang.call(this, xc, yc, sp, 'images/enemy-bug.png');
+	if (fl) this.flip = fl;
+	else this.flip = false;
 	this.spriteWidth = 101;
 	this.hitbox = {
 		minx: 2, 
 		miny: 78, 
-		maxx: 98, 
+		maxx: 110, 
 		maxy: 143
 	};
 }
+Enemy.prototype = Object.create(Thang.prototype);
+Enemy.prototype.constructor = Enemy;
 
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
@@ -26,29 +46,161 @@ Enemy.prototype.update = function(dt) {
     // all computers.
 	this.x += dt*this.speed;
 	if (this.x > canvasWidth) this.x = -this.spriteWidth+5;
-	
 }
-
-// Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-	ctx.strokeRect(this.x, this.y, 5,5);
+Enemy.prototype.render = function(){
+	if (this.flip){
+		console.log("negative bug");
+		ctx.save();
+		ctx.translate(canvasWidth, 0);
+		ctx.scale(-1, 1);
+		ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+		ctx.restore();	
+	} else 
+		ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
-
-var Player = function(){
-	this.x=200;
-	this.y=400;
-	this.sprite = 'images/char-boy.png';
+/*
+	GEM CLASS
+*/
+var Gem = function(xc, yc, spd, spr){
+	Thang.call(this, xc, yc, spd, spr);
 	this.hitbox = {
 		minx: 18, 
-		miny: 80, 
+		miny: 70, 
+		maxx: 84, 
+		maxy: 150
+	};
+}
+Gem.prototype = Object.create(Thang.prototype);
+Gem.prototype.constructor = Gem;
+
+/*
+	PLAYER CLASS ALSO EXTENDS THANG
+*/
+var Player = function(sprite, hop, spd){
+	Thang.call(this, 200, 400, spd, sprite);
+	this.status = 'idle';
+	this.hitbox = {
+		minx: 18, 
+		miny: 90, 
 		maxx: 84, 
 		maxy: 139
 	};
 	this.dead = false;
+	this.hopHeight = hop;
+	this.lastIdlePos = { x : 200, y : 400 };
+	this.score = 0;
+	
+	document.addEventListener('keyup', function(e) {
+		var allowedKeys = {
+			37: 'left',
+			38: 'up',
+			39: 'right',
+			40: 'down'
+		};
+	
+		player.handleInput(allowedKeys[e.keyCode]);
+	});
+	
 };
-Player.prototype.update = function(){
-	if (this.detectCollisions()) this.dead = true;
+Player.prototype = Object.create(Thang.prototype);
+Player.prototype.constructor = Player;
+
+Player.prototype.reset = function(){
+	this.x = 200;
+	this.y = 400;
+}
+
+Player.prototype.update = function(dt){
+	if (powerup && this.detectItem()){
+		if (powerup.sprite.indexOf('green') > 2) this.score += 1;
+		else if (powerup.sprite.indexOf('blue') > 2) this.score += 3;
+		else if (powerup.sprite.indexOf('orange') > 2) this.score += 5;
+		powerup = null;
+	}
+	if (this.detectCollisions()){
+		this.dead = true;
+		this.status = 'idle';
+		this.score -= 5;
+		if (this.score < 0) this.score = 0;
+		return;
+	}
+	if (this.status == 'hoppingLeft'){
+		//x always moves to the left speed*dt pixels regardless 
+		this.x -= this.speed*dt; 
+		/*y has to oscillate, hence the cosine function
+		  total move distance is 100 so the value deltaX = 50-(this.lastIdlePos.x - this.x)
+		  starts out being 50 and goes to -50 as we complete the hop to the left.
+		  Thus, if we take deltaX and divide it by 50 and multiply by pi, we can apply 
+		  the cosine function to obtain an obscillation between pi and -pi. Then multiply this
+		  by hopHeight to get the value we're gonna subtract from the last idle y coord.
+		  Same reasoning applies to hopping right.
+		  */
+		var deltaX = 50-(this.lastIdlePos.x - this.x);
+		this.y = this.lastIdlePos.y - this.hopHeight*Math.cos(Math.PI*deltaX/50);
+		if (this.x <= this.lastIdlePos.x-100){ //reached the end of the move
+			this.x = this.lastIdlePos.x = this.lastIdlePos.x-100;
+			this.y = this.lastIdlePos.y;
+			this.status = 'idle';
+		}
+	}
+	else if (this.status == 'hoppingRight'){
+		//x always moves to the right by speed*dt pixels until it reaches end
+		this.x += this.speed*dt; 
+		var deltaX = 50-(this.x - this.lastIdlePos.x);
+		this.y = this.lastIdlePos.y - this.hopHeight*Math.cos(Math.PI*deltaX/50);
+		if (this.x >= this.lastIdlePos.x+100){ //here is when we reached the end of the move length
+			this.x = this.lastIdlePos.x = this.lastIdlePos.x+100;
+			this.y = this.lastIdlePos.y;
+			this.status = 'idle';
+		}
+	}
+	else if (this.status == 'hoppingUp'){
+		/* Similar reasoning here except the tiles apparently are only 90px tall 
+		Also, we don't want the bounce to be too bouncy so we oscilate between 0 and pi
+		rather than between pi and -pi
+		*/
+		this.y -= this.speed*dt; //y moves up by speed*dt
+		var delta = (this.lastIdlePos.y - this.y );
+		//introducing the oscillating bounciness element:
+		/*this.y -= this.hopHeight*Math.cos(Math.PI*3*delta);
+		if (this.y <= this.lastIdlePos.y - 90){
+			this.y = this.lastIdlePos.y = this.lastIdlePos.y-90;
+			this.status = 'idle';
+		}*/
+		//hop move dampened by 50% with respect to hoppingLeft and hoppingRight
+		this.x = this.lastIdlePos.x + 0.5*this.hopHeight*Math.cos(Math.PI*delta/90); 
+		if (this.y <= this.lastIdlePos.y-90){ //here is when we reached the end of the move length
+			this.y = this.lastIdlePos.y = this.lastIdlePos.y-90;
+			this.x = this.lastIdlePos.x;
+			this.status = 'idle';
+		}
+	}
+	else if (this.status == 'hoppingDown'){ //just the converse from hoppingUp
+		this.y += this.speed*dt; 
+		var delta = (this.lastIdlePos.y - this.y );
+		//hops to the right when going down, rightward movement dampened by 50%s
+		this.x = this.lastIdlePos.x - 0.5*this.hopHeight*Math.cos(Math.PI*delta/90); 
+		if (this.y >= this.lastIdlePos.y+90){ //here is when we reached the end of the move length
+			this.y = this.lastIdlePos.y = this.lastIdlePos.y+90;
+			this.x = this.lastIdlePos.x;
+			this.status = 'idle';
+		}
+	}
+};
+
+/*
+	handleInput converted to instance method so that its invocation can wait
+	until we instantiate the player after making the choice in the start menu
+*/
+Player.prototype.handleInput = function(key){
+	if (!key || this.status != 'idle') return;
+	console.log("handleInput received "+key);
+	if (key == 'left' && this.x > 10) this.status = 'hoppingLeft';
+	if (key == 'right' && this.x+this.hitbox.maxx < canvasWidth-50) this.status = 'hoppingRight'; 
+	if (key == 'up' ) this.status = 'hoppingUp';
+	if (key == 'down' && this.y+this.hitbox.maxy < canvasHeight-100) this.status = 'hoppingDown';
+	this.lastIdlePos.x = this.x;
+	this.lastIdlePos.y = this.y;
 };
 
 Player.prototype.detectCollisions = function(){
@@ -58,52 +210,75 @@ Player.prototype.detectCollisions = function(){
 		&&   this.x + this.hitbox.minx < en.x +en.hitbox.maxx
 		&&   this.y + this.hitbox.maxy > en.y + en.hitbox.miny
 		&&   this.y + this.hitbox.miny < en.y +en.hitbox.maxy){
-			//console.log("looked for collision with enemy "+en);
 			return true;
 		}
 	}
 	return false;
 };
 
-Player.prototype.render = Enemy.prototype.render;/*function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-}*/
-
-Player.prototype.handleInput = function(key){
-	if (!key) return;
-	console.log("handleInput received "+key);
-	if (key == 'left') this.x -= 100;
-	if (key == 'right') this.x += 100;
-	if (key == 'up') this.y -= 90;
-	if (key == 'down') this.y += 90;
-};
-
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
-
+Player.prototype.detectItem = function(){
+	if ( this.x + this.hitbox.maxx > powerup.x + powerup.hitbox.minx
+		&&   this.x + this.hitbox.minx < powerup.x +powerup.hitbox.maxx
+		&&   this.y + this.hitbox.maxy > powerup.y + powerup.hitbox.miny
+		&&   this.y + this.hitbox.miny < powerup.y +powerup.hitbox.maxy){
+			return true;
+		}
+	else
+		return false;
+	
+}
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
-var player = new Player();
+var player; // = new Player(); Instantiated in the engine
 allEnemies = [];
 var ctr = 0;
 while (ctr < 5){
-	allEnemies.push(new Enemy(ctr*100, 60+(ctr*85)%255, 75+Math.random()*50));
+	if (Math.random() < 0.5)
+		allEnemies.push(new Enemy(ctr*100, 60+(ctr*85)%340, (150+Math.random()*75)  )); 
+	else
+		allEnemies.push(new Enemy(ctr*100, 60+(ctr*85)%340, (150+Math.random()*75), true  )); 
+	//old mod for row was 255, old spd was 150+Math.random()*50
 	ctr++;
 }
+var powerup;
 
 
-// This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keyup', function(e) {
-    var allowedKeys = {
-        37: 'left',
-        38: 'up',
-        39: 'right',
-        40: 'down'
-    };
 
-    player.handleInput(allowedKeys[e.keyCode]);
-});
+/*
+	Javascript Inheritance Class notes
+*/
+/* Basic JS class Definition */
+/*var SuperClass = function(params){
+	this.field = params;
+}
+SuperClass.prototype.method1 = function(){
+	
+}*/
+//end basic class definition
+
+/* Basic JS Subclass Implementation: 3 steps */
+/*var SubClass = function(params, moreparams){
+	//constructor function delegated to superclass
+	SuperClass.call(this, params); 
+	this.someotherfield = moreparams;
+}
+//Object prototype replaced with copy of superclass prototype
+SubClass.prototype = Object.create(SuperClass.prototype);
+//replace constructor with subclass constructor
+SubClass.prototype.constructor = SubClass;
+//define any other methods
+SubClass.prototype.subclassmethod = function(){
+	
+}*/
+
+
+
+
+
+
+
+
+
+

@@ -24,10 +24,12 @@ var Engine = (function(global) {
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
         lastTime;
+	var initialized = false;
 	
     canvas.width = 505;
     canvas.height = 606;
     doc.body.appendChild(canvas);
+	ctx.font = '24px Georgia';
 
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
@@ -45,6 +47,8 @@ var Engine = (function(global) {
         /* Call our update/render functions, pass along the time delta to
          * our update function since it may be used for smooth animation.
          */
+		 ctx.clearRect(0,0,canvas.width, canvas.height);
+		 ctx.strokeRect(0,0,canvas.width, canvas.height);
         update(dt);
         render();
 
@@ -64,9 +68,13 @@ var Engine = (function(global) {
      * game loop.
      */
     function init() {
+		
         reset();
         lastTime = Date.now();
-        main();
+		if (!initialized) 
+			startMenu();
+		else
+        	main();
     }
 
     /* This function is called by main (our game loop) and itself calls all
@@ -84,6 +92,25 @@ var Engine = (function(global) {
 			reset();
 			player.dead = false;
 		}
+		//generate a random gem/powerup 10% of the time  
+		//whenever there's no powerup already active and
+		if (!powerup){
+			if (Math.random() < 0.1){
+				var clr = Math.random();
+				if (clr < 0.33)
+					powerup = new Gem(Math.random()*(canvasWidth-100), Math.random()*(canvasHeight-150)+25,
+									0,'images/gem-blue.png');
+				else if (clr < 0.66)
+					powerup = new Gem(Math.random()*(canvasWidth-100), Math.random()*(canvasHeight-150)+25,
+									0,'images/gem-green.png');
+				else
+					powerup = new Gem(Math.random()*(canvasWidth-100), Math.random()*(canvasHeight-150)+25,
+									0,'images/gem-orange.png');
+			}
+		}
+		else{
+			powerup.update();
+		}
     }
 
     /* This is called by the update function  and loops through all of the
@@ -97,7 +124,7 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update();
+        player.update(dt);
     }
 
     /* This function initially draws the "game level", it will then call
@@ -141,6 +168,9 @@ var Engine = (function(global) {
 
 
         renderEntities();
+		
+		if (powerup) powerup.render();
+		ctx.fillText("Score: "+player.score, 20, 20);
     }
 
     /* This function is called by the render function and is called on each game
@@ -163,8 +193,7 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        player.x = 200;
-		player.y = 400;
+		if (player) player.reset();
     }
 
     /* Go ahead and load all of the images we know we're going to need to
@@ -176,7 +205,17 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/char-boy2.png',
+		'images/menu.png',
+		'images/char-cat-girl.png',
+		'images/char-horn-girl.png',
+		'images/char-pink-girl.png',
+		'images/char-princess-girl.png',
+		'images/arrow.png',
+		'images/gem-blue.png',
+		'images/gem-green.png',
+		'images/gem-orange.png'
     ]);
     Resources.onReady(init);
 
@@ -187,4 +226,74 @@ var Engine = (function(global) {
     global.ctx = ctx;
 	global.canvasWidth = canvas.width;
 	global.canvasHeight = canvas.height;
+	
+	var arrowLoc = {x: 14, y: 100};
+	function startMenu(){
+		var girl1Rect = {x1: 20, y1: 196, x2: 85, y2: 258};
+		var girl2Rect = {x1: 216, y1: 196, x2: 281, y2: 258};
+		var girl3Rect = {x1: 406, y1: 196, x2: 471, y2: 258};
+		var boy1Rect = {x1: 126, y1: 452, x2: 191, y2: 514};
+		var boy2Rect = {x1: 346, y1: 452, x2: 411, y2: 514};
+		function isInside(pos, rect){
+			return pos.x < rect.x2 && pos.x > rect.x1 && pos.y > rect.y1 && pos.y < rect.y2;
+		}
+		
+		canvas.addEventListener('click', function(e){
+			var pos = getMousePos(e);
+			if (isInside(pos, girl1Rect)) player = new Player('images/char-cat-girl.png', 15, 600);
+			else if (isInside(pos, girl2Rect))  player = new Player('images/char-horn-girl.png', 20, 700);
+			else if (isInside(pos, girl3Rect))  player = new Player('images/char-pink-girl.png', 25, 900);
+			else if (isInside(pos, boy1Rect))  player = new Player('images/char-boy.png', 10, 500);
+			else if (isInside(pos, boy2Rect)) player = new Player('images/char-boy2.png', 5, 700);
+			if (player){
+				initialized = true;
+				init();
+			}
+		});
+		
+		canvas.addEventListener('mousemove', function(e){
+			var pos = getMousePos(e);
+			if (isInside(pos, girl1Rect)) arrowLoc = {x: 14, y: 100};
+			else if (isInside(pos, girl2Rect)) arrowLoc = {x: 210, y: 100};
+			else if (isInside(pos, girl3Rect)) arrowLoc = {x: 400, y: 100};
+			else if (isInside(pos, boy1Rect)) arrowLoc = {x: 120, y: 358};
+			else if (isInside(pos, boy2Rect)) arrowLoc = {x: 340, y: 358};
+			else highlight = null;
+			
+		});
+		
+		menuLoop();
+		
+		
+	}
+	
+	function menuLoop(){
+		ctx.fillRect(0,0,canvas.width,canvas.height);
+		ctx.strokeStyle = "#FFF";
+		var menu = Resources.get('images/menu.png');
+		var girl1 = Resources.get('images/char-cat-girl.png');
+		var girl2 = Resources.get('images/char-horn-girl.png');
+		var girl3 = Resources.get('images/char-pink-girl.png');
+		var boy1 = Resources.get('images/char-boy.png');
+		var boy2 = Resources.get('images/char-boy2.png');
+		var arrow = Resources.get('images/arrow.png');
+		ctx.drawImage(menu, 0, 0);
+		ctx.drawImage(arrow, arrowLoc.x, arrowLoc.y);
+		ctx.drawImage(girl1, 4, 124);
+		ctx.drawImage(girl2, 200, 124);
+		ctx.drawImage(girl3, 390, 124);
+		ctx.drawImage(boy1, 110, 380);
+		ctx.drawImage(boy2, 330, 380);
+		
+		if (initialized) return;
+		else
+			requestAnimationFrame(menuLoop);
+	}
+	
+	function getMousePos(e){
+		var rect = canvas.getBoundingClientRect();
+		return {x: e.clientX - rect.left, y: e.clientY -rect.top};
+	}
+	
+	
 })(this);
