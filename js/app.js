@@ -24,7 +24,10 @@ Thang.prototype.update = function(dt) {/*empty stub just so all thangs can have 
 var Enemy = function(xc, yc, sp, fl) {
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
-	Thang.call(this, xc, yc, sp, 'images/enemy-bug.png');
+	if (fl)
+		Thang.call(this, xc, yc, sp, 'images/enemy-bug-flipped.png');
+	else
+		Thang.call(this, xc, yc, sp, 'images/enemy-bug.png');
 	if (fl) this.flip = fl;
 	else this.flip = false;
 	this.spriteWidth = 101;
@@ -44,12 +47,16 @@ Enemy.prototype.update = function(dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
-	this.x += dt*this.speed;
+	if (this.flip)
+		this.x -= dt*this.speed;
+	else
+		this.x += dt*this.speed;
 	if (this.x > canvasWidth) this.x = -this.spriteWidth+5;
+	if (this.x < -this.spriteWidth) this.x = canvasWidth-5;
 }
 //Had to override thang's rendering method in order to support
 //bugs moving to the left without having to create a new bug png
-Enemy.prototype.render = function(){
+/*Enemy.prototype.render = function(){
 	if (this.flip){
 		ctx.save();
 		ctx.translate(canvasWidth, 0);
@@ -58,7 +65,7 @@ Enemy.prototype.render = function(){
 		ctx.restore();	
 	} else 
 		ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-}
+}*/
 /*
 	GEM CLASS
 */
@@ -222,6 +229,7 @@ Player.prototype.detectCollisions = function(){
 		&&   this.y + this.hitbox.miny < en.y +en.hitbox.maxy){
 			return true;
 		}
+		
 	}
 	return false;
 };
@@ -245,11 +253,10 @@ var player; // = new Player(); Instantiated in the engine
 allEnemies = [];
 var ctr = 0;
 while (ctr < 5){
-	if (Math.random() < 0.5)
-		allEnemies.push(new Enemy(ctr*100, 60+(ctr*85)%340, (150+Math.random()*75)  )); 
-	else
+	if (Math.random() < 0.5) //half the time enemies will be normal...
+		allEnemies.push(new Enemy(ctr*100, 60+(ctr*85)%340, (150+Math.random()*75), false  )); 
+	else	//the other half will be flipped
 		allEnemies.push(new Enemy(ctr*100, 60+(ctr*85)%340, (150+Math.random()*75), true  )); 
-	//old mod for row was 255, old spd was 150+Math.random()*50
 	ctr++;
 }
 var powerup;
