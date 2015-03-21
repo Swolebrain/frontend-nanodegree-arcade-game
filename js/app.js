@@ -7,6 +7,7 @@ var Thang = function(xc, yc, spd, spr){
 	this.y = yc;
 	this.speed = spd;
 }
+//rendering method is pretty much the same for everyone
 Thang.prototype.render = function(){
 	ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
@@ -17,11 +18,10 @@ Thang.prototype.update = function(dt) {/*empty stub just so all thangs can have 
 	ENEMY CLASS SYNONYMOUS WITH BUG. EXTENDS THANG
 	(If I was ever going to add more enemies I
 	would add the sprite as a constructor parameter)
+	Params are x coord, y coord, speed, and flip. When flip is
+	true, bug moves to the left. Otherwise it moves to the right.
 */
 var Enemy = function(xc, yc, sp, fl) {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
-
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
 	Thang.call(this, xc, yc, sp, 'images/enemy-bug.png');
@@ -47,9 +47,10 @@ Enemy.prototype.update = function(dt) {
 	this.x += dt*this.speed;
 	if (this.x > canvasWidth) this.x = -this.spriteWidth+5;
 }
+//Had to override thang's rendering method in order to support
+//bugs moving to the left without having to create a new bug png
 Enemy.prototype.render = function(){
 	if (this.flip){
-		console.log("negative bug");
 		ctx.save();
 		ctx.translate(canvasWidth, 0);
 		ctx.scale(-1, 1);
@@ -75,6 +76,10 @@ Gem.prototype.constructor = Gem;
 
 /*
 	PLAYER CLASS ALSO EXTENDS THANG
+	Players always start at fixed x,y. 
+	Params for constructor: name of sprite,
+	width of oscillation between hops,
+	speed of movement.
 */
 var Player = function(sprite, hop, spd){
 	Thang.call(this, 200, 400, spd, sprite);
@@ -86,7 +91,8 @@ var Player = function(sprite, hop, spd){
 		maxy: 139
 	};
 	this.dead = false;
-	this.hopHeight = hop;
+	this.hopHeight = hop; 
+	//higher hopheight means the character will arc more steeply when hopping to the side
 	this.lastIdlePos = { x : 200, y : 400 };
 	this.score = 0;
 	
@@ -194,7 +200,7 @@ Player.prototype.update = function(dt){
 */
 Player.prototype.handleInput = function(key){
 	if (!key || this.status != 'idle') return;
-	console.log("handleInput received "+key);
+	//console.log("handleInput received "+key);
 	if (key == 'left' && this.x > 10) this.status = 'hoppingLeft';
 	if (key == 'right' && this.x+this.hitbox.maxx < canvasWidth-50) this.status = 'hoppingRight'; 
 	if (key == 'up' ) this.status = 'hoppingUp';
@@ -203,6 +209,9 @@ Player.prototype.handleInput = function(key){
 	this.lastIdlePos.y = this.y;
 };
 
+/*	Collision detection based on 
+*
+*/
 Player.prototype.detectCollisions = function(){
 	for (var i in allEnemies){
 		var en = allEnemies[i];
