@@ -210,7 +210,8 @@ Player.prototype.handleInput = function(key){
 };
 
 /*	Collision detection based on 
-*
+*	bounding boxes of enemy objects and
+*	player object
 */
 Player.prototype.detectCollisions = function(){
 	for (var i in allEnemies){
