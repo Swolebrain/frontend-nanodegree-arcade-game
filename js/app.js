@@ -210,7 +210,7 @@ Player.prototype.handleInput = function(key){
 	//console.log("handleInput received "+key);
 	if (key == 'left' && this.x > 10) this.status = 'hoppingLeft';
 	if (key == 'right' && this.x+this.hitbox.maxx < canvasWidth-50) this.status = 'hoppingRight'; 
-	if (key == 'up' ) this.status = 'hoppingUp';
+	if (key == 'up' && this.y > 0) this.status = 'hoppingUp';
 	if (key == 'down' && this.y+this.hitbox.maxy < canvasHeight-100) this.status = 'hoppingDown';
 	this.lastIdlePos.x = this.x;
 	this.lastIdlePos.y = this.y;
