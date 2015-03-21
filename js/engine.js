@@ -71,10 +71,12 @@ var Engine = (function(global) {
 		
         reset();
         lastTime = Date.now();
+		/*When not initialized, I'm gonna run a different game loop for
+		the start menu. This code is at the end of this file.*/
 		if (!initialized) 
 			startMenu();
 		else
-        	main();
+        	main(); //Game engine is initialized (char has been chosen), run main game loop
     }
 
     /* This function is called by main (our game loop) and itself calls all
@@ -227,17 +229,34 @@ var Engine = (function(global) {
 	global.canvasWidth = canvas.width;
 	global.canvasHeight = canvas.height;
 	
+	
+	//Object to hold x. y position of where the character selection arrow
+	//will be drawn
 	var arrowLoc = {x: 14, y: 100};
+	/* 	Menu loop. 
+	*  	 
+	*/
 	function startMenu(){
+		//Rectangles that enclose each of the characters
+		//if mouse is moved onto them, the arrow will move to
+		//point to the correct character. If mouse is clicked
+		//on these rectangles, the appropriate character will
+		//be chosen and the game will start
 		var girl1Rect = {x1: 20, y1: 196, x2: 85, y2: 258};
 		var girl2Rect = {x1: 216, y1: 196, x2: 281, y2: 258};
 		var girl3Rect = {x1: 406, y1: 196, x2: 471, y2: 258};
 		var boy1Rect = {x1: 126, y1: 452, x2: 191, y2: 514};
 		var boy2Rect = {x1: 346, y1: 452, x2: 411, y2: 514};
+		/* 	Function to determine whether a given x,y position
+		*	on the canvas is inside a rectangle of this kind
+		*/
 		function isInside(pos, rect){
 			return pos.x < rect.x2 && pos.x > rect.x1 && pos.y > rect.y1 && pos.y < rect.y2;
 		}
 		
+		/*	Click Event handler. If one of the character rectangles is clicked, the player
+		*	object is instantiated and the game is initialized.
+		*/
 		canvas.addEventListener('click', function(e){
 			var pos = getMousePos(e);
 			if (isInside(pos, girl1Rect)) player = new Player('images/char-cat-girl.png', 15, 600);
@@ -251,6 +270,9 @@ var Engine = (function(global) {
 			}
 		});
 		
+		/*	Mouse move handler. If one of the character rectangles is moused over, 
+		*	that character will be highlighted by an arrow
+		*/
 		canvas.addEventListener('mousemove', function(e){
 			var pos = getMousePos(e);
 			if (isInside(pos, girl1Rect)) arrowLoc = {x: 14, y: 100};
@@ -266,7 +288,10 @@ var Engine = (function(global) {
 		
 		
 	}
-	
+	/*	Menu rendering Loop. Just draws the bg image,
+	*	chracters, and also draws the arrow at the 
+	*	position based on the results of mousemove handler
+	*/
 	function menuLoop(){
 		ctx.fillRect(0,0,canvas.width,canvas.height);
 		ctx.strokeStyle = "#FFF";
@@ -285,11 +310,16 @@ var Engine = (function(global) {
 		ctx.drawImage(boy1, 110, 380);
 		ctx.drawImage(boy2, 330, 380);
 		
-		if (initialized) return;
-		else
+		//if a character has been clicked, stop running this menu rendering loop
+		if (initialized) 
+			return;
+		else	//keep running menu rendering loop
 			requestAnimationFrame(menuLoop);
 	}
 	
+	/*	Translates client mouse coordinates into 
+	*	coordinates relative to canvas
+	*/
 	function getMousePos(e){
 		var rect = canvas.getBoundingClientRect();
 		return {x: e.clientX - rect.left, y: e.clientY -rect.top};
