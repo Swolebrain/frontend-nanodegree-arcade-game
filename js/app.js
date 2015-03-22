@@ -1,5 +1,6 @@
 /*
 	MAIN SUPERCLASS THANG
+	Params are xcoord, ycoord, speed, and sprite url
 */
 var Thang = function(xc, yc, spd, spr){
 	this.sprite = spr;
@@ -47,6 +48,7 @@ Enemy.prototype.update = function(dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
+	dt = dt %300;
 	if (this.flip)
 		this.x -= dt*this.speed;
 	else
@@ -56,16 +58,7 @@ Enemy.prototype.update = function(dt) {
 }
 //Had to override thang's rendering method in order to support
 //bugs moving to the left without having to create a new bug png
-/*Enemy.prototype.render = function(){
-	if (this.flip){
-		ctx.save();
-		ctx.translate(canvasWidth, 0);
-		ctx.scale(-1, 1);
-		ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-		ctx.restore();	
-	} else 
-		ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-}*/
+
 /*
 	GEM CLASS
 */
@@ -124,20 +117,21 @@ Player.prototype.reset = function(){
 }
 
 Player.prototype.update = function(dt){
-	if (powerup && this.detectItem()){
+	var collision = this.detectCollisions();
+	if (powerup && collision === 'powerup'){
 		if (powerup.sprite.indexOf('green') > 2) this.score += 1;
 		else if (powerup.sprite.indexOf('blue') > 2) this.score += 3;
 		else if (powerup.sprite.indexOf('orange') > 2) this.score += 5;
 		powerup = null;
 	}
-	if (this.detectCollisions()){
+	else if (collision === 'enemy'){
 		this.dead = true;
 		this.status = 'idle';
 		this.score -= 5;
 		if (this.score < 0) this.score = 0;
 		return;
 	}
-	if (this.status == 'hoppingLeft'){
+	if (this.status === 'hoppingLeft'){
 		//x always moves to the left speed*dt pixels regardless 
 		this.x -= this.speed*dt; 
 		/*y has to oscillate, hence the cosine function
@@ -156,7 +150,7 @@ Player.prototype.update = function(dt){
 			this.status = 'idle';
 		}
 	}
-	else if (this.status == 'hoppingRight'){
+	else if (this.status === 'hoppingRight'){
 		//x always moves to the right by speed*dt pixels until it reaches end
 		this.x += this.speed*dt; 
 		var deltaX = 50-(this.x - this.lastIdlePos.x);
@@ -167,7 +161,7 @@ Player.prototype.update = function(dt){
 			this.status = 'idle';
 		}
 	}
-	else if (this.status == 'hoppingUp'){
+	else if (this.status === 'hoppingUp'){
 		/* Similar reasoning here except the tiles apparently are only 90px tall 
 		Also, we don't want the bounce to be too bouncy so we oscilate between 0 and pi
 		rather than between pi and -pi
@@ -188,7 +182,7 @@ Player.prototype.update = function(dt){
 			this.status = 'idle';
 		}
 	}
-	else if (this.status == 'hoppingDown'){ //just the converse from hoppingUp
+	else if (this.status === 'hoppingDown'){ //just the converse from hoppingUp
 		this.y += this.speed*dt; 
 		var delta = (this.lastIdlePos.y - this.y );
 		//hops to the right when going down, rightward movement dampened by 50%s
@@ -208,10 +202,10 @@ Player.prototype.update = function(dt){
 Player.prototype.handleInput = function(key){
 	if (!key || this.status != 'idle') return;
 	//console.log("handleInput received "+key);
-	if (key == 'left' && this.x > 10) this.status = 'hoppingLeft';
-	if (key == 'right' && this.x+this.hitbox.maxx < canvasWidth-50) this.status = 'hoppingRight'; 
-	if (key == 'up' && this.y > 0) this.status = 'hoppingUp';
-	if (key == 'down' && this.y+this.hitbox.maxy < canvasHeight-100) this.status = 'hoppingDown';
+	if (key === 'left' && this.x > 10) this.status = 'hoppingLeft';
+	if (key === 'right' && this.x+this.hitbox.maxx < canvasWidth-50) this.status = 'hoppingRight'; 
+	if (key === 'up' && this.y > 0) this.status = 'hoppingUp';
+	if (key === 'down' && this.y+this.hitbox.maxy < canvasHeight-100) this.status = 'hoppingDown';
 	this.lastIdlePos.x = this.x;
 	this.lastIdlePos.y = this.y;
 };
@@ -221,30 +215,27 @@ Player.prototype.handleInput = function(key){
 *	player object
 */
 Player.prototype.detectCollisions = function(){
+	if (powerup)
+		if ( this.x + this.hitbox.maxx > powerup.x + powerup.hitbox.minx &&   
+			this.x + this.hitbox.minx < powerup.x +powerup.hitbox.maxx &&   
+			this.y + this.hitbox.maxy > powerup.y + powerup.hitbox.miny &&   
+			this.y + this.hitbox.miny < powerup.y +powerup.hitbox.maxy){
+				return 'powerup';
+			}
 	for (var i in allEnemies){
 		var en = allEnemies[i];
-		if ( this.x + this.hitbox.maxx > en.x + en.hitbox.minx
-		&&   this.x + this.hitbox.minx < en.x +en.hitbox.maxx
-		&&   this.y + this.hitbox.maxy > en.y + en.hitbox.miny
-		&&   this.y + this.hitbox.miny < en.y +en.hitbox.maxy){
-			return true;
+		if ( this.x + this.hitbox.maxx > en.x + en.hitbox.minx &&
+		   this.x + this.hitbox.minx < en.x +en.hitbox.maxx &&
+		   this.y + this.hitbox.maxy > en.y + en.hitbox.miny &&
+		   this.y + this.hitbox.miny < en.y +en.hitbox.maxy){
+			return 'enemy';
 		}
 		
 	}
 	return false;
 };
 
-Player.prototype.detectItem = function(){
-	if ( this.x + this.hitbox.maxx > powerup.x + powerup.hitbox.minx
-		&&   this.x + this.hitbox.minx < powerup.x +powerup.hitbox.maxx
-		&&   this.y + this.hitbox.maxy > powerup.y + powerup.hitbox.miny
-		&&   this.y + this.hitbox.miny < powerup.y +powerup.hitbox.maxy){
-			return true;
-		}
-	else
-		return false;
-	
-}
+
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
@@ -260,42 +251,5 @@ while (ctr < 5){
 	ctr++;
 }
 var powerup;
-
-
-
-/*
-	Javascript Inheritance Class notes
-*/
-/* Basic JS class Definition */
-/*var SuperClass = function(params){
-	this.field = params;
-}
-SuperClass.prototype.method1 = function(){
-	
-}*/
-//end basic class definition
-
-/* Basic JS Subclass Implementation: 3 steps */
-/*var SubClass = function(params, moreparams){
-	//constructor function delegated to superclass
-	SuperClass.call(this, params); 
-	this.someotherfield = moreparams;
-}
-//Object prototype replaced with copy of superclass prototype
-SubClass.prototype = Object.create(SuperClass.prototype);
-//replace constructor with subclass constructor
-SubClass.prototype.constructor = SubClass;
-//define any other methods
-SubClass.prototype.subclassmethod = function(){
-	
-}*/
-
-
-
-
-
-
-
-
 
 
