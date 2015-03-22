@@ -94,19 +94,19 @@ var Engine = (function(global) {
 			reset();
 			player.dead = false;
 		}
-		//generate a random gem/powerup 10% of the time  
+		//generate a random gem/powerup 5% of the time  
 		//whenever there's no powerup already active and
 		if (!powerup){
-			if (Math.random() < 0.1){
+			if (Math.random() < 0.05){
 				var clr = Math.random();
 				if (clr < 0.33)
-					powerup = new Gem(Math.random()*(canvasWidth-100), Math.random()*(canvasHeight-150)+25,
+					powerup = new Gem(Math.random()*(canvasWidth-100), Math.random()*(canvasHeight-200)+25,
 									0,'images/gem-blue.png');
 				else if (clr < 0.66)
-					powerup = new Gem(Math.random()*(canvasWidth-100), Math.random()*(canvasHeight-150)+25,
+					powerup = new Gem(Math.random()*(canvasWidth-100), Math.random()*(canvasHeight-200)+25,
 									0,'images/gem-green.png');
 				else
-					powerup = new Gem(Math.random()*(canvasWidth-100), Math.random()*(canvasHeight-150)+25,
+					powerup = new Gem(Math.random()*(canvasWidth-100), Math.random()*(canvasHeight-200)+25,
 									0,'images/gem-orange.png');
 			}
 		}
@@ -258,7 +258,7 @@ var Engine = (function(global) {
 		/*	Click Event handler. If one of the character rectangles is clicked, the player
 		*	object is instantiated and the game is initialized.
 		*/
-		canvas.addEventListener('click', function(e){
+		var onclick = function(e){
 			var pos = getMousePos(e);
 			if (isInside(pos, girl1Rect)) player = new Player('images/char-cat-girl.png', 15, 600);
 			else if (isInside(pos, girl2Rect))  player = new Player('images/char-horn-girl.png', 20, 700);
@@ -267,14 +267,17 @@ var Engine = (function(global) {
 			else if (isInside(pos, boy2Rect)) player = new Player('images/char-boy2.png', 5, 700);
 			if (player){
 				initialized = true;
+				canvas.removeEventListener('click', onclick);
+				canvas.removeEventListener('mousemove', onmousemove);
 				init();
 			}
-		});
+		}
+		canvas.addEventListener('click', onclick);
 		
 		/*	Mouse move handler. If one of the character rectangles is moused over, 
 		*	that character will be highlighted by an arrow
 		*/
-		canvas.addEventListener('mousemove', function(e){
+		var onmousemove = function(e){
 			var pos = getMousePos(e);
 			if (isInside(pos, girl1Rect)) arrowLoc = {x: 14, y: 100};
 			else if (isInside(pos, girl2Rect)) arrowLoc = {x: 210, y: 100};
@@ -283,7 +286,8 @@ var Engine = (function(global) {
 			else if (isInside(pos, boy2Rect)) arrowLoc = {x: 340, y: 358};
 			else highlight = null;
 			
-		});
+		}
+		canvas.addEventListener('mousemove', onmousemove);
 		
 		menuLoop();
 		
