@@ -94,10 +94,10 @@ var Engine = (function(global) {
 			reset();
 			player.dead = false;
 		}
-		//generate a random gem/powerup 5% of the time  
+		//generate a random gem/powerup 2% of the time  
 		//whenever there's no powerup already active and
 		if (!powerup){
-			if (Math.random() < 0.05){
+			if (Math.random() < 0.02){
 				var clr = Math.random();
 				if (clr < 0.33)
 					powerup = new Gem(Math.random()*(canvasWidth-100), Math.random()*(canvasHeight-200)+25,
@@ -141,10 +141,10 @@ var Engine = (function(global) {
          */
         var rowImages = [
                 'images/water-block.png',   // Top row is water
-                'images/stone-block.png',   // Row 1 of 3 of stone
+                'images/grass-block.png',   // Row 1 of 3 of stone
                 'images/stone-block.png',   // Row 2 of 3 of stone
                 'images/stone-block.png',   // Row 3 of 3 of stone
-                'images/grass-block.png',   // Row 1 of 2 of grass
+                'images/stone-block.png',   // Row 1 of 2 of grass
                 'images/grass-block.png'    // Row 2 of 2 of grass
             ],
             numRows = 6,

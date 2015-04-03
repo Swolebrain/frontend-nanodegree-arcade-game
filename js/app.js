@@ -124,7 +124,7 @@ Player.prototype.update = function(dt){
 		else if (powerup.sprite.indexOf('orange') > 2) this.score += 5;
 		powerup = null;
 	}
-	else if (collision === 'enemy'){
+	else if (collision === 'enemy' || this.y < 0){
 		this.dead = true;
 		this.status = 'idle';
 		this.score -= 5;
@@ -245,9 +245,9 @@ allEnemies = [];
 var ctr = 0;
 while (ctr < 5){
 	if (Math.random() < 0.5) //half the time enemies will be normal...
-		allEnemies.push(new Enemy(ctr*100, 60+(ctr*85)%340, (150+Math.random()*75), false  )); 
+		allEnemies.push(new Enemy(ctr*100, 143+(ctr*83)%249, (150+Math.random()*75), false  )); 
 	else	//the other half will be flipped
-		allEnemies.push(new Enemy(ctr*100, 60+(ctr*85)%340, (150+Math.random()*75), true  )); 
+		allEnemies.push(new Enemy(ctr*100, 143+(ctr*83)%249, (150+Math.random()*75), true  )); 
 	ctr++;
 }
 var powerup;
