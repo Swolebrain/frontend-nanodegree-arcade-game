@@ -7,12 +7,12 @@ var Thang = function(xc, yc, spd, spr){
 	this.x = xc;
 	this.y = yc;
 	this.speed = spd;
-}
+};
 //rendering method is pretty much the same for everyone
 Thang.prototype.render = function(){
 	ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-}
-Thang.prototype.update = function(dt) {/*empty stub just so all thangs can have update() called on em */}
+};
+Thang.prototype.update = function() {/*empty stub just so all thangs can have update() called on em */};
 
 
 /*
@@ -38,7 +38,7 @@ var Enemy = function(xc, yc, sp, fl) {
 		maxx: 110, 
 		maxy: 143
 	};
-}
+};
 Enemy.prototype = Object.create(Thang.prototype);
 Enemy.prototype.constructor = Enemy;
 
@@ -55,7 +55,7 @@ Enemy.prototype.update = function(dt) {
 		this.x += dt*this.speed;
 	if (this.x > canvasWidth) this.x = -this.spriteWidth+5;
 	if (this.x < -this.spriteWidth) this.x = canvasWidth-5;
-}
+};
 //Had to override thang's rendering method in order to support
 //bugs moving to the left without having to create a new bug png
 
@@ -70,7 +70,7 @@ var Gem = function(xc, yc, spd, spr){
 		maxx: 84, 
 		maxy: 150
 	};
-}
+};
 Gem.prototype = Object.create(Thang.prototype);
 Gem.prototype.constructor = Gem;
 
@@ -114,7 +114,7 @@ Player.prototype.constructor = Player;
 Player.prototype.reset = function(){
 	this.x = 200;
 	this.y = 400;
-}
+};
 
 Player.prototype.update = function(dt){
 	var collision = this.detectCollisions();
@@ -131,6 +131,8 @@ Player.prototype.update = function(dt){
 		if (this.score < 0) this.score = 0;
 		return;
 	}
+  var deltaX = 0;
+  var delta = 0;
 	if (this.status === 'hoppingLeft'){
 		//x always moves to the left speed*dt pixels regardless 
 		this.x -= this.speed*dt; 
@@ -142,7 +144,7 @@ Player.prototype.update = function(dt){
 		  by hopHeight to get the value we're gonna subtract from the last idle y coord.
 		  Same reasoning applies to hopping right.
 		  */
-		var deltaX = 50-(this.lastIdlePos.x - this.x);
+		deltaX = 50-(this.lastIdlePos.x - this.x);
 		this.y = this.lastIdlePos.y - this.hopHeight*Math.cos(Math.PI*deltaX/50);
 		if (this.x <= this.lastIdlePos.x-100){ //reached the end of the move
 			this.x = this.lastIdlePos.x = this.lastIdlePos.x-100;
@@ -153,7 +155,7 @@ Player.prototype.update = function(dt){
 	else if (this.status === 'hoppingRight'){
 		//x always moves to the right by speed*dt pixels until it reaches end
 		this.x += this.speed*dt; 
-		var deltaX = 50-(this.x - this.lastIdlePos.x);
+		deltaX = 50-(this.x - this.lastIdlePos.x);
 		this.y = this.lastIdlePos.y - this.hopHeight*Math.cos(Math.PI*deltaX/50);
 		if (this.x >= this.lastIdlePos.x+100){ //here is when we reached the end of the move length
 			this.x = this.lastIdlePos.x = this.lastIdlePos.x+100;
@@ -167,7 +169,7 @@ Player.prototype.update = function(dt){
 		rather than between pi and -pi
 		*/
 		this.y -= this.speed*dt; //y moves up by speed*dt
-		var delta = (this.lastIdlePos.y - this.y );
+		delta = (this.lastIdlePos.y - this.y );
 		//introducing the oscillating bounciness element:
 		/*this.y -= this.hopHeight*Math.cos(Math.PI*3*delta);
 		if (this.y <= this.lastIdlePos.y - 90){
@@ -184,7 +186,7 @@ Player.prototype.update = function(dt){
 	}
 	else if (this.status === 'hoppingDown'){ //just the converse from hoppingUp
 		this.y += this.speed*dt; 
-		var delta = (this.lastIdlePos.y - this.y );
+		delta = (this.lastIdlePos.y - this.y );
 		//hops to the right when going down, rightward movement dampened by 50%s
 		this.x = this.lastIdlePos.x - 0.5*this.hopHeight*Math.cos(Math.PI*delta/90); 
 		if (this.y >= this.lastIdlePos.y+90){ //here is when we reached the end of the move length
@@ -215,23 +217,25 @@ Player.prototype.handleInput = function(key){
 *	player object
 */
 Player.prototype.detectCollisions = function(){
-	if (powerup)
+  if (powerup){
 		if ( this.x + this.hitbox.maxx > powerup.x + powerup.hitbox.minx &&   
 			this.x + this.hitbox.minx < powerup.x +powerup.hitbox.maxx &&   
 			this.y + this.hitbox.maxy > powerup.y + powerup.hitbox.miny &&   
 			this.y + this.hitbox.miny < powerup.y +powerup.hitbox.maxy){
 				return 'powerup';
 			}
-	for (var i in allEnemies){
-		var en = allEnemies[i];
-		if ( this.x + this.hitbox.maxx > en.x + en.hitbox.minx &&
-		   this.x + this.hitbox.minx < en.x +en.hitbox.maxx &&
-		   this.y + this.hitbox.maxy > en.y + en.hitbox.miny &&
-		   this.y + this.hitbox.miny < en.y +en.hitbox.maxy){
-			return 'enemy';
-		}
-		
-	}
+  }
+  for (var i in allEnemies){
+    if (allEnemies.hasOwnProperty(i)){
+      var en = allEnemies[i];
+      if ( this.x + this.hitbox.maxx > en.x + en.hitbox.minx &&
+          this.x + this.hitbox.minx < en.x +en.hitbox.maxx &&
+          this.y + this.hitbox.maxy > en.y + en.hitbox.miny &&
+          this.y + this.hitbox.miny < en.y +en.hitbox.maxy){
+        return 'enemy';
+      }
+    }
+  }
 	return false;
 };
 
@@ -241,7 +245,7 @@ Player.prototype.detectCollisions = function(){
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 var player; // = new Player(); Instantiated in the engine
-allEnemies = [];
+var allEnemies = [];
 var ctr = 0;
 while (ctr < 5){
 	if (Math.random() < 0.5) //half the time enemies will be normal...
@@ -251,5 +255,3 @@ while (ctr < 5){
 	ctr++;
 }
 var powerup;
-
-
