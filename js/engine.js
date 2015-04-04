@@ -61,7 +61,7 @@ var Engine = (function(global) {
          * function again as soon as the browser is able to draw another frame.
          */
         win.requestAnimationFrame(main);
-    };
+    }
 
     /* This function does some initial setup that should only occur once,
      * particularly setting the lastTime variable that is required for the
@@ -271,7 +271,7 @@ var Engine = (function(global) {
 				canvas.removeEventListener('mousemove', onmousemove);
 				init();
 			}
-		}
+		};
 		canvas.addEventListener('click', onclick);
 		
 		/*	Mouse move handler. If one of the character rectangles is moused over, 
@@ -286,7 +286,7 @@ var Engine = (function(global) {
 			else if (isInside(pos, boy2Rect)) arrowLoc = {x: 340, y: 358};
 			else highlight = null;
 			
-		}
+		};
 		canvas.addEventListener('mousemove', onmousemove);
 		
 		menuLoop();
