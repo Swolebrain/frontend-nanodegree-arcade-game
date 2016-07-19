@@ -14,7 +14,7 @@
  * a little simpler to work with.
  */
 
-var Engine = (function(global) {
+module.exports = function(global, {player, allEnemies, Player, Gem}) {
     /* Predefine the variables we'll be using within this scope,
      * create the canvas element, grab the 2D context for that canvas
      * set the canvas elements height/width and add it to the DOM.
@@ -25,7 +25,7 @@ var Engine = (function(global) {
         ctx = canvas.getContext('2d'),
         lastTime;
 	var initialized = false;
-	
+
     canvas.width = 505;
     canvas.height = 606;
     doc.body.appendChild(canvas);
@@ -68,12 +68,12 @@ var Engine = (function(global) {
      * game loop.
      */
     function init() {
-		
+
         reset();
         lastTime = Date.now();
 		/*When not initialized, I'm gonna run a different game loop for
 		the start menu. This code is at the end of this file.*/
-		if (!initialized) 
+		if (!initialized)
 			startMenu();
 		else
         	main(); //Game engine is initialized (char has been chosen), run main game loop
@@ -94,7 +94,7 @@ var Engine = (function(global) {
 			reset();
 			player.dead = false;
 		}
-		//generate a random gem/powerup 2% of the time  
+		//generate a random gem/powerup 2% of the time
 		//whenever there's no powerup already active and
 		if (!powerup){
 			if (Math.random() < 0.02){
@@ -170,7 +170,7 @@ var Engine = (function(global) {
 
 
         renderEntities();
-		
+
 		if (powerup) powerup.render();
 		ctx.fillText("Score: "+player.score, 20, 20);
     }
@@ -229,13 +229,13 @@ var Engine = (function(global) {
     global.ctx = ctx;
 	global.canvasWidth = canvas.width;
 	global.canvasHeight = canvas.height;
-	
-	
+
+
 	//Object to hold x. y position of where the character selection arrow
 	//will be drawn
 	var arrowLoc = {x: 14, y: 100};
-	/* 	Menu loop. 
-	*  	 
+	/* 	Menu loop.
+	*
 	*/
 	function startMenu(){
 		//Rectangles that enclose each of the characters
@@ -254,7 +254,7 @@ var Engine = (function(global) {
 		function isInside(pos, rect){
 			return pos.x < rect.x2 && pos.x > rect.x1 && pos.y > rect.y1 && pos.y < rect.y2;
 		}
-		
+
 		/*	Click Event handler. If one of the character rectangles is clicked, the player
 		*	object is instantiated and the game is initialized.
 		*/
@@ -273,8 +273,8 @@ var Engine = (function(global) {
 			}
 		};
 		canvas.addEventListener('click', onclick);
-		
-		/*	Mouse move handler. If one of the character rectangles is moused over, 
+
+		/*	Mouse move handler. If one of the character rectangles is moused over,
 		*	that character will be highlighted by an arrow
 		*/
 		var onmousemove = function(e){
@@ -284,17 +284,16 @@ var Engine = (function(global) {
 			else if (isInside(pos, girl3Rect)) arrowLoc = {x: 400, y: 100};
 			else if (isInside(pos, boy1Rect)) arrowLoc = {x: 120, y: 358};
 			else if (isInside(pos, boy2Rect)) arrowLoc = {x: 340, y: 358};
-			else highlight = null;
-			
+
 		};
 		canvas.addEventListener('mousemove', onmousemove);
-		
+
 		menuLoop();
-		
-		
+
+
 	}
 	/*	Menu rendering Loop. Just draws the bg image,
-	*	chracters, and also draws the arrow at the 
+	*	chracters, and also draws the arrow at the
 	*	position based on the results of mousemove handler
 	*/
 	function menuLoop(){
@@ -314,21 +313,21 @@ var Engine = (function(global) {
 		ctx.drawImage(girl3, 390, 124);
 		ctx.drawImage(boy1, 110, 380);
 		ctx.drawImage(boy2, 330, 380);
-		
+
 		//if a character has been clicked, stop running this menu rendering loop
-		if (initialized) 
+		if (initialized)
 			return;
 		else	//keep running menu rendering loop
 			requestAnimationFrame(menuLoop);
 	}
-	
-	/*	Translates client mouse coordinates into 
+
+	/*	Translates client mouse coordinates into
 	*	coordinates relative to canvas
 	*/
 	function getMousePos(e){
 		var rect = canvas.getBoundingClientRect();
 		return {x: e.clientX - rect.left, y: e.clientY -rect.top};
 	}
-	
-	
-})(this);
+
+
+};

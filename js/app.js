@@ -1,71 +1,7 @@
-/*
-	MAIN SUPERCLASS THANG
-	Params are xcoord, ycoord, speed, and sprite url
-*/
-class Thang{
-  constructor(xc, yc, spd, spr){
-  	this.sprite = spr;
-  	this.x = xc;
-  	this.y = yc;
-  	this.speed = spd;
-  }
-  render(){
-  	ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-  }
-  update(){
-    //empty stub so there aren't exceptions when you call
-    //update on a Thang
-  }
-}
 
-/*
-	ENEMY CLASS SYNONYMOUS WITH BUG. EXTENDS THANG
-	(If I was ever going to add more enemies I
-	would add the sprite as a constructor parameter)
-	Params are x coord, y coord, speed, and flip. When flip is
-	true, bug moves to the left. Otherwise it moves to the right.
-*/
-class Enemy extends Thang{
-  constructor(xc, yc, sp, fl) {
-    super(xc, yc, sp, 'images/enemy-bug.png');
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
-  	if (fl) this.flip = fl;
-  	else this.flip = false;
-  	this.spriteWidth = 101;
-  	this.hitbox = {
-  		minx: 2,
-  		miny: 78,
-  		maxx: 110,
-  		maxy: 143
-  	};
-  }
-  // Update the enemy's position, required method for game
-  // Parameter: dt, a time delta between ticks
-  update(dt){
-    dt = dt %300;
-  	if (this.flip)
-  		this.x -= dt*this.speed;
-  	else
-  		this.x += dt*this.speed;
-  	if (this.x > canvasWidth) this.x = -this.spriteWidth+5;
-  	if (this.x < -this.spriteWidth) this.x = canvasWidth-5;
-  }
-  render(){
-    if (this.flip){
-      ctx.save();
-      ctx.translate(this.x + 50,0);
-      ctx.scale(-1,1);
-      ctx.translate(-this.x - 50, 0);
-      ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-      ctx.restore();
-    }
-    else{
-      super.render();
-    }
-  }
-}
 
+import Thang from './Thang.js';
+import Enemy from './Enemy.js';
 
 /*
 	GEM CLASS
@@ -106,7 +42,7 @@ class Player extends Thang{
   	this.lastIdlePos = { x : 200, y : 400 };
   	this.score = 0;
 
-  	document.addEventListener('keyup', function(e) {
+  	document.addEventListener('keyup', (e) => {
   		var allowedKeys = {
   			37: 'left',
   			38: 'up',
@@ -114,7 +50,7 @@ class Player extends Thang{
   			40: 'down'
   		};
 
-  		player.handleInput(allowedKeys[e.keyCode]);
+  		this.handleInput(allowedKeys[e.keyCode]);
   	});
   }
   reset(){
@@ -252,4 +188,9 @@ while (ctr < 5){
 		allEnemies.push(new Enemy(ctr*100, 143+(ctr*83)%249, (150+Math.random()*75), true  ));
 	ctr++;
 }
-var powerup;
+window.powerup = false;
+
+
+
+var Engine = require('./engine.js');
+Engine(window, {player, allEnemies, Player, Gem});
