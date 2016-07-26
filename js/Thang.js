@@ -2,7 +2,7 @@
 	MAIN SUPERCLASS THANG
 	Params are xcoord, ycoord, speed, and sprite url
 */
-class Thang{
+export default class Thang{
   constructor(xc, yc, spd, spr){
   	this.sprite = spr;
   	this.x = xc;
@@ -17,5 +17,3 @@ class Thang{
     //update on a Thang
   }
 }
-
-module.exports = Thang;

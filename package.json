@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "live": "budo js/app.js:js/prod.js --live"
+    "live": "budo js/app.js:js/prod.js --live",
+    "deploy": "browserify js/app.js -t [babelify --presets [es2015]] | uglifyjs > js/prod.js"
   },
   "repository": {
     "type": "git",
@@ -27,12 +28,7 @@
   "browserify": {
     "transform": [
       [
-        "babelify",
-        {
-          "presets": [
-            "es2015"
-          ]
-        }
+        "babelify", {   "presets": [ "es2015" ]  }
       ]
     ]
   }

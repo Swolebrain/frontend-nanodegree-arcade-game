@@ -1,4 +1,4 @@
-var Thang = require('./Thang.js');
+import Thang from './Thang';
 
 /*
 	ENEMY CLASS SYNONYMOUS WITH BUG. EXTENDS THANG
