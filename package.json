@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "live": "budo js/app.js:js/prod.js --live",
-    "deploy": "browserify js/app.js -t [babelify --presets [es2015]] | uglifyjs > js/prod.js"
+    "live": "budo www/js/app.js:www/js/prod.js --live",
+    "deploy": "browserify www/js/app.js -t [babelify --presets [es2015]] | uglifyjs > www/js/prod.js"
   },
   "repository": {
     "type": "git",
