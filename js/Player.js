@@ -25,6 +25,7 @@ export default class Player extends Thang{
 
     Array.prototype.forEach.call(document.querySelectorAll('#controls img'), (arrow)=>{
       arrow.addEventListener('click', evt=>this.handleInput(evt.target.id));
+      arrow.addEventListener('touchend', evt=>this.handleInput(evt.target.id));
     });
 
   	document.addEventListener('keyup', (e) => {
