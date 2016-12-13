@@ -23,6 +23,10 @@ export default class Player extends Thang{
   	this.lastIdlePos = { x : 200, y : 400 };
   	this.score = 0;
 
+    Array.prototype.forEach.call(document.querySelectorAll('#controls img'), (arrow)=>{
+      arrow.addEventListener('click', evt=>this.handleInput(evt.target.id));
+    });
+
   	document.addEventListener('keyup', (e) => {
   		var allowedKeys = {
   			37: 'left',

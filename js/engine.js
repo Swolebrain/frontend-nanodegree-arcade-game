@@ -28,12 +28,12 @@ export default function(global, player) {
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
         lastTime;
-	var initialized = false;
+    var initialized = false;
 
-    canvas.width = 505;
-    canvas.height = 606;
-    doc.body.appendChild(canvas);
-	ctx.font = '24px Georgia';
+        canvas.width = 505;
+        canvas.height = 606;
+        doc.body.appendChild(canvas);
+        ctx.font = '24px Georgia';
 
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
@@ -45,14 +45,14 @@ export default function(global, player) {
          * would be the same for everyone (regardless of how fast their
          * computer is) - hurray time!
          */
-        var now = Date.now(),
-            dt = (now - lastTime) / 1000.0;
+      var now = Date.now(),
+          dt = (now - lastTime) / 1000.0;
 
         /* Call our update/render functions, pass along the time delta to
          * our update function since it may be used for smooth animation.
          */
-		 ctx.clearRect(0,0,canvas.width, canvas.height);
-		 ctx.strokeRect(0,0,canvas.width, canvas.height);
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        ctx.strokeRect(0,0,canvas.width, canvas.height);
         update(dt);
         render();
 
@@ -214,15 +214,15 @@ export default function(global, player) {
         'images/enemy-bug-flipped.png',
         'images/char-boy.png',
         'images/char-boy2.png',
-		'images/menu.png',
-		'images/char-cat-girl.png',
-		'images/char-horn-girl.png',
-		'images/char-pink-girl.png',
-		'images/char-princess-girl.png',
-		'images/arrow.png',
-		'images/gem-blue.png',
-		'images/gem-green.png',
-		'images/gem-orange.png'
+    		'images/menu.png',
+    		'images/char-cat-girl.png',
+    		'images/char-horn-girl.png',
+    		'images/char-pink-girl.png',
+    		'images/char-princess-girl.png',
+    		'images/arrow.png',
+    		'images/gem-blue.png',
+    		'images/gem-green.png',
+    		'images/gem-orange.png'
     ]);
     Resources.onReady(init);
 
@@ -231,8 +231,8 @@ export default function(global, player) {
      * from within their app.js files.
      */
     global.ctx = ctx;
-	global.canvasWidth = canvas.width;
-	global.canvasHeight = canvas.height;
+    global.canvasWidth = canvas.width;
+    global.canvasHeight = canvas.height;
 
 
 	//Object to hold x. y position of where the character selection arrow

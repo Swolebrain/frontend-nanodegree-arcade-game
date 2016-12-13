@@ -1,3 +1,36 @@
 body {
-    text-align: center;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  overflow-y:hidden;
+}
+
+#controls{
+  position: absolute;
+  bottom:0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+#controls *{
+  box-sizing: border-box;
+  width: 33%;
+  display: inline-block
+}
+#controls div{
+  display: flex;
+  flex-direction: column;
+}
+#controls img{
+  width: 100px;
+  height: 100px;
+}
+#left{
+  transform: rotate(90deg);
+}
+#right{
+  transform: rotate(-90deg);
+}
+#up{
+  transform: rotate(180deg);
 }
