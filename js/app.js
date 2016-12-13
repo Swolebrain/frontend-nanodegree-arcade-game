@@ -23,4 +23,7 @@ window.powerup = false;
 
 
 export {allEnemies};
+window.addEventListener("deviceready", function(){
+	Engine(window, player);
+})
 Engine(window, player);
