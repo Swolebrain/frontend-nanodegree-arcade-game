@@ -3,7 +3,7 @@
 <!-- config.xml reference: https://build.phonegap.com/docs/config-xml -->
 <widget xmlns     = "http://www.w3.org/ns/widgets"
         xmlns:gap = "http://phonegap.com/ns/1.0"
-        id        = "com.phonegap.helloworld"
+        id        = "com.phonegap.froggerdamnation"
         version   = "1.0.0">
 
     <name>Frogger Damnation</name>
@@ -12,8 +12,8 @@
         Frogger clone. Pick up the gems to increase your score, but protect yourself from the bugs. See how high you can get!
     </description>
 
-    <author href="http://phonegap.com" email="support@phonegap.com">
-        PhoneGap Team
+    <author href="http://swolebrain.com" email="thecodingteacher@gmail.com">
+        Swolebrain
     </author>
 
     <!-- Define the main entry-point to the application -->
@@ -101,7 +101,7 @@
         <splash src="www/res/screen/ios/Default~iphone.png"             platform="ios" width="320"  height="480" />
     </platform> -->
 
-    
+
     <!--
         Define access to external domains.
         <access />            - a blank access tag denies access to all external resources.
